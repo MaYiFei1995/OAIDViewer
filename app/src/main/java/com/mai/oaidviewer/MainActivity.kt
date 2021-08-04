@@ -1,12 +1,12 @@
 package com.mai.oaidviewer
 
+//import com.bun.miitmdid.core.ErrorCode
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.telephony.TelephonyManager
@@ -14,13 +14,19 @@ import android.text.Html
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.bun.miitmdid.core.ErrorCode
+import com.bun.miitmdid.core.InfoCode
 import com.bun.miitmdid.core.MdidSdkHelper
 import com.bun.miitmdid.interfaces.IIdentifierListener
 import com.bun.miitmdid.interfaces.IdSupplier
+import com.bun.miitmdid.pojo.IdSupplierImpl
 import com.mai.oaidviewer.databinding.ActivityMainBinding
-import java.lang.Exception
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+
 
 class MainActivity : AppCompatActivity(), IIdentifierListener {
 
@@ -60,7 +66,8 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
     private fun init() {
         when (Build.VERSION.SDK_INT) {
             in Build.VERSION_CODES.Q..Int.MAX_VALUE -> {
-                initOaid()
+//                initOaid6()
+                initOaid20210301()
             }
             in Build.VERSION_CODES.M until Build.VERSION_CODES.Q -> {
                 checkPermission()
@@ -78,37 +85,66 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
         }
     }
 
-    private fun initOaid() {
-        val ret = MdidSdkHelper.InitSdk(this, true, this)
-        val errMsg: String = "$ret " + when (ret) {
-            ErrorCode.INIT_ERROR_BEGIN ->
-                "INIT_ERROR_BEGIN"
-            ErrorCode.INIT_ERROR_DEVICE_NOSUPPORT ->
-                "不支持的设备"
-            ErrorCode.INIT_ERROR_LOAD_CONFIGFILE ->
-                "加载配置文件失败"
-            ErrorCode.INIT_ERROR_MANUFACTURER_NOSUPPORT ->
-                "不支持的厂商"
-            ErrorCode.INIT_ERROR_RESULT_DELAY ->
-                "信息将会延迟返回，获取数据可能在异步线程，取决于设备"
-            ErrorCode.INIT_HELPER_CALL_ERROR ->
-                "反射调用出错"
-//            ErrorCode.INIT_ERROR_CONFIGFILE_MISMATCH ->
-//                "配置文件不匹配"
-            else ->
-                "未知错误"
+    private fun initOaid20210301() {
+        System.loadLibrary("nllvm1623827671");
+        MdidSdkHelper.InitCert(this, loadPemFromAssetFile());
+        val code = MdidSdkHelper.InitSdk(this, true, this)
+        // 根据SDK返回的code进行不同处理
+        val unsupportedIdSupplier = IdSupplierImpl()
+        when (code) {
+            InfoCode.INIT_ERROR_CERT_ERROR -> {
+                // 证书未初始化或证书无效，SDK内部不会回调onSupport
+                // APP自定义逻辑
+                setText("cert not init or check not pass")
+                onSupport(unsupportedIdSupplier)
+            }
+            InfoCode.INIT_ERROR_DEVICE_NOSUPPORT -> {
+                // 不支持的设备, SDK内部不会回调onSupport
+                // APP自定义逻辑
+                setText("device not supported")
+                onSupport(unsupportedIdSupplier)
+            }
+            InfoCode.INIT_ERROR_LOAD_CONFIGFILE -> {
+                // 加载配置文件出错, SDK内部不会回调onSupport
+                // APP自定义逻辑
+                setText("failed to load config file")
+                onSupport(unsupportedIdSupplier)
+            }
+            InfoCode.INIT_ERROR_MANUFACTURER_NOSUPPORT -> {
+                // 不支持的设备厂商, SDK内部不会回调onSupport
+                // APP自定义逻辑
+                setText("manufacturer not supported")
+                onSupport(unsupportedIdSupplier)
+            }
+            InfoCode.INIT_ERROR_SDK_CALL_ERROR -> {
+                // sdk调用出错, SSDK内部不会回调onSupport
+                // APP自定义逻辑
+                setText("sdk call error")
+                onSupport(unsupportedIdSupplier)
+            }
+            InfoCode.INIT_INFO_RESULT_DELAY -> {
+                // 获取接口是异步的，SDK内部会回调onSupport
+                setText("result delay (async)")
+            }
+            InfoCode.INIT_INFO_RESULT_OK -> {
+                // 获取接口是同步的，SDK内部会回调onSupport
+                setText("result ok (sync)")
+            }
+            else -> {
+                // sdk版本高于DemoHelper代码版本可能出现的情况，无法确定是否调用onSupport
+                // 不影响成功的OAID获取
+                setText("getDeviceIds: unknown code: $code")
+            }
         }
-
-        setText(errMsg)
     }
 
-    override fun OnSupport(isSupport: Boolean, _supplier: IdSupplier?) {
+    override fun onSupport(_supplier: IdSupplier?) {
         if (_supplier == null) {
             return
         }
-
         val sb = StringBuilder()
-        sb.append("support:$isSupport<br>")
+        sb.append("support:${_supplier.isSupported}<br>")
+        sb.append("support:${_supplier.isLimited}<br>")
         sb.append("oaid:${_supplier.oaid}<br>")
         sb.append("vaid:${_supplier.vaid}<br>")
         sb.append("aaid:${_supplier.aaid}<br>")
@@ -174,6 +210,23 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
             binder.mainTv.post {
                 binder.mainTv.text = e.toString()
             }
+        }
+    }
+
+    private fun loadPemFromAssetFile(): String {
+        return try {
+            val `is`: InputStream = assets.open("com.example.oaidtest2.cert.pem")
+            val `in` = BufferedReader(InputStreamReader(`is`))
+            val builder = java.lang.StringBuilder()
+            var line: String?
+            while (`in`.readLine().also { line = it } != null) {
+                builder.append(line)
+                builder.append('\n')
+            }
+            builder.toString()
+        } catch (e: IOException) {
+            setText("loadPemFromAssetFile failed")
+            ""
         }
     }
 }
