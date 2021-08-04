@@ -8,11 +8,12 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.mai.oaidviewer"
+//        applicationId "com.mai.oaidviewer"
+        applicationId "com.example.oaidtest2"   //适配1.0.26版本demo签名，修改包名
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 2
-        versionName "2.0"
+        versionCode 3
+        versionName "3.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,7 +35,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree('libs/oaid_sdk_1.0.25.aar')
+    implementation fileTree('libs/oaid_sdk_1.0.26.aar')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
