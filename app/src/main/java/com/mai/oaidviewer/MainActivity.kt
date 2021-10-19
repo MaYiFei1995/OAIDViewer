@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
     }
 
     private fun initOaid20210301() {
-        System.loadLibrary("nllvm1623827671");
+        System.loadLibrary("nllvm1632808251147706677");
         MdidSdkHelper.InitCert(this, loadPemFromAssetFile());
         val code = MdidSdkHelper.InitSdk(this, true, this)
         // 根据SDK返回的code进行不同处理
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
         }
         val sb = StringBuilder()
         sb.append("support:${_supplier.isSupported}<br>")
-        sb.append("support:${_supplier.isLimited}<br>")
+        sb.append("isLimited:${_supplier.isLimited}<br>")
         sb.append("oaid:${_supplier.oaid}<br>")
         sb.append("vaid:${_supplier.vaid}<br>")
         sb.append("aaid:${_supplier.aaid}<br>")
