@@ -66,8 +66,7 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
     private fun init() {
         when (Build.VERSION.SDK_INT) {
             in Build.VERSION_CODES.Q..Int.MAX_VALUE -> {
-//                initOaid6()
-                initOaid20210301()
+                initOaid()
             }
             in Build.VERSION_CODES.M until Build.VERSION_CODES.Q -> {
                 checkPermission()
@@ -85,9 +84,12 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
         }
     }
 
-    private fun initOaid20210301() {
-        System.loadLibrary("nllvm1632808251147706677");
-        MdidSdkHelper.InitCert(this, loadPemFromAssetFile());
+    private fun initOaid() {
+        /* 1.0.29 - 20210928 */
+//        System.loadLibrary("nllvm1632808251147706677")
+        /* 1.0.30 - 20211018*/
+        System.loadLibrary("msaoaidsec")
+        MdidSdkHelper.InitCert(this, loadPemFromAssetFile())
         val code = MdidSdkHelper.InitSdk(this, true, this)
         // 根据SDK返回的code进行不同处理
         val unsupportedIdSupplier = IdSupplierImpl()
