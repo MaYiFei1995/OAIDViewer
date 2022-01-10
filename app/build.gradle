@@ -4,18 +4,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdk 31
 
     defaultConfig {
-//        applicationId "com.mai.oaidviewer"
         applicationId "com.example.oaidtest2"   //适配1.0.26版本demo签名，修改包名
-        minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 3
-        versionName "3.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdk 21
+        targetSdk 31
     }
 
     buildTypes {
@@ -32,16 +26,65 @@ android {
         jvmTarget = '1.8'
     }
     buildFeatures.viewBinding = true
+    flavorDimensions "default"
+    productFlavors {
+        lib_1023 {
+            dimension "default"
+            versionName = "1.0.23"
+            versionCode = 1023
+        }
+        lib_1025 {
+            dimension "default"
+            versionName = "1.0.25"
+            versionCode = 1025
+        }
+        lib_1026 {
+            dimension "default"
+            versionName = "1.0.26"
+            versionCode = 1026
+        }
+        lib_1029 {
+            dimension "default"
+            versionName = "1.0.29"
+            versionCode = 1029
+        }
+        lib_1030 {
+            dimension "default"
+            versionName = "1.0.30"
+            versionCode = 1030
+        }
+        lib_1100 {
+            dimension "default"
+            versionName = "1.1.0"
+            versionCode = 1100
+        }
+    }
 }
 
 dependencies {
-    implementation fileTree('libs/oaid_sdk_1.0.30.aar')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
+
+    implementation project(':library:impl')
+
+    lib_1023Implementation project(":library:lib_1023")
+    lib_1023Implementation files("./libs/oaid_sdk_1.0.23.aar")
+
+    lib_1025Implementation project(":library:lib_1025")
+    lib_1025Implementation files("./libs/oaid_sdk_1.0.25.aar")
+
+    lib_1026Implementation project(":library:lib_1026")
+    lib_1026Implementation files("./libs/oaid_sdk_1.0.26.aar")
+
+    lib_1029Implementation project(":library:lib_1029")
+    lib_1029Implementation files("./libs/oaid_sdk_1.0.29.aar")
+
+    lib_1030Implementation project(":library:lib_1030")
+    lib_1030Implementation files("./libs/oaid_sdk_1.0.30.aar")
+
+    lib_1100Implementation project(":library:lib_1100")
+    lib_1100Implementation files("./libs/oaid_sdk_1.1.0.aar")
+
 }

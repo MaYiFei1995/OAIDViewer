@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">OAIDViewer</string>
+    <string name="copy">Copy</string>
 </resources>
