@@ -1,6 +1,5 @@
 package com.mai.oaidviewer
 
-//import com.bun.miitmdid.core.ErrorCode
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.*
@@ -16,22 +15,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.bun.miitmdid.core.InfoCode
-import com.bun.miitmdid.core.MdidSdkHelper
-import com.bun.miitmdid.interfaces.IIdentifierListener
-import com.bun.miitmdid.interfaces.IdSupplier
-import com.bun.miitmdid.pojo.IdSupplierImpl
 import com.mai.oaidviewer.databinding.ActivityMainBinding
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
+import com.mai.oaidviewer.library.OAIDCallback
+import com.mai.oaidviewer.library.OAIDHelper
+import com.mai.oaidviewer.library.OAIDSupplier
+import java.text.SimpleDateFormat
+import java.util.*
 
 
-class MainActivity : AppCompatActivity(), IIdentifierListener {
+class MainActivity : AppCompatActivity(), OAIDCallback {
 
-    lateinit var binder: ActivityMainBinding
-    var alertDialog: AlertDialog? = null
+    private lateinit var binder: ActivityMainBinding
+    private var alertDialog: AlertDialog? = null
 
     private var permissionErrCount = 0
 
@@ -80,77 +75,61 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
     private fun setText(str: String) {
         Log.e("OAIDViewer", str)
         binder.mainTv.post {
-            binder.mainTv.text = Html.fromHtml(str)
+            binder.mainTv.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(str, Html.FROM_HTML_MODE_COMPACT)
+            } else {
+                Html.fromHtml(str)
+            }
         }
+    }
+
+    private val sdf: SimpleDateFormat by lazy {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+            Locale.CHINA)
     }
 
     private fun initOaid() {
-        /* 1.0.29 - 20210928 */
-//        System.loadLibrary("nllvm1632808251147706677")
-        /* 1.0.30 - 20211018*/
-        System.loadLibrary("msaoaidsec")
-        MdidSdkHelper.InitCert(this, loadPemFromAssetFile())
-        val code = MdidSdkHelper.InitSdk(this, true, this)
-        // 根据SDK返回的code进行不同处理
-        val unsupportedIdSupplier = IdSupplierImpl()
-        when (code) {
-            InfoCode.INIT_ERROR_CERT_ERROR -> {
-                // 证书未初始化或证书无效，SDK内部不会回调onSupport
-                // APP自定义逻辑
-                setText("cert not init or check not pass")
-                onSupport(unsupportedIdSupplier)
-            }
-            InfoCode.INIT_ERROR_DEVICE_NOSUPPORT -> {
-                // 不支持的设备, SDK内部不会回调onSupport
-                // APP自定义逻辑
-                setText("device not supported")
-                onSupport(unsupportedIdSupplier)
-            }
-            InfoCode.INIT_ERROR_LOAD_CONFIGFILE -> {
-                // 加载配置文件出错, SDK内部不会回调onSupport
-                // APP自定义逻辑
-                setText("failed to load config file")
-                onSupport(unsupportedIdSupplier)
-            }
-            InfoCode.INIT_ERROR_MANUFACTURER_NOSUPPORT -> {
-                // 不支持的设备厂商, SDK内部不会回调onSupport
-                // APP自定义逻辑
-                setText("manufacturer not supported")
-                onSupport(unsupportedIdSupplier)
-            }
-            InfoCode.INIT_ERROR_SDK_CALL_ERROR -> {
-                // sdk调用出错, SSDK内部不会回调onSupport
-                // APP自定义逻辑
-                setText("sdk call error")
-                onSupport(unsupportedIdSupplier)
-            }
-            InfoCode.INIT_INFO_RESULT_DELAY -> {
-                // 获取接口是异步的，SDK内部会回调onSupport
-                setText("result delay (async)")
-            }
-            InfoCode.INIT_INFO_RESULT_OK -> {
-                // 获取接口是同步的，SDK内部会回调onSupport
-                setText("result ok (sync)")
-            }
-            else -> {
-                // sdk版本高于DemoHelper代码版本可能出现的情况，无法确定是否调用onSupport
-                // 不影响成功的OAID获取
-                setText("getDeviceIds: unknown code: $code")
-            }
-        }
+        val oaidHelper = OAIDHelper(this, this)
+        oaidHelper.init()
+
+        // 设备系统与签名证书信息
+        val (versionName, versionCode) = oaidHelper.getSdkVersion()
+        val headerText = "Version: $versionName ($versionCode)\n" +
+                "Time: ${sdf.format(System.currentTimeMillis())}\n" +
+                "Brand: ${Build.BRAND}\n" +
+                "Manufacturer: ${Build.MANUFACTURER}\n" +
+                "Model: ${Build.MODEL}\n" +
+                "AndroidVersion: ${Build.VERSION.RELEASE}\n" +
+                "\n\n" +
+                oaidHelper.getCertInfo(sdf)
+        binder.versionTv.text = headerText
     }
 
-    override fun onSupport(_supplier: IdSupplier?) {
-        if (_supplier == null) {
-            return
-        }
+    /**
+     * 更新信息
+     */
+    override fun onText(msg: String) {
+        // 回调可能在子线程，需要 runOnUiThread
+        runOnUiThread { setText(msg) }
+    }
+
+    /**
+     * OAID回调封装
+     */
+    override fun onSupport(_supplier: OAIDSupplier) {
         val sb = StringBuilder()
-        sb.append("support:${_supplier.isSupported}<br>")
-        sb.append("isLimited:${_supplier.isLimited}<br>")
-        sb.append("oaid:${_supplier.oaid}<br>")
-        sb.append("vaid:${_supplier.vaid}<br>")
-        sb.append("aaid:${_supplier.aaid}<br>")
-        if (_supplier.oaid.split("0").size - 1 > 10) {
+        sb.append("Support: ${if (_supplier.isSupported()) "√" else "×"}<br>")
+        sb.append("IsLimited: ${
+            when {
+                _supplier.isLimited() == null -> "null"
+                _supplier.isLimited()!! -> "√"
+                else -> "×"
+            }
+        }<br>")
+        sb.append("Oaid: ${_supplier.getOAID()}<br>")
+        sb.append("Vaid: ${_supplier.getVAID()}<br>")
+        sb.append("Aaid: ${_supplier.getAAID()}<br>")
+        if (_supplier.getOAID().split("0").size - 1 > 10) {
             sb.append("<font color=\"#FF0000\"> 设置-> 隐私 -> 广告与隐私 -> \"限制广告追踪\" 开关需要关闭 </font>")
         }
         setText(sb.toString())
@@ -197,7 +176,7 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         checkPermission()
@@ -215,20 +194,5 @@ class MainActivity : AppCompatActivity(), IIdentifierListener {
         }
     }
 
-    private fun loadPemFromAssetFile(): String {
-        return try {
-            val `is`: InputStream = assets.open("com.example.oaidtest2.cert.pem")
-            val `in` = BufferedReader(InputStreamReader(`is`))
-            val builder = java.lang.StringBuilder()
-            var line: String?
-            while (`in`.readLine().also { line = it } != null) {
-                builder.append(line)
-                builder.append('\n')
-            }
-            builder.toString()
-        } catch (e: IOException) {
-            setText("loadPemFromAssetFile failed")
-            ""
-        }
-    }
+
 }
