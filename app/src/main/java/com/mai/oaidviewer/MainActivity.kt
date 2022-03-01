@@ -38,13 +38,15 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
         init()
 
         binder.copyBtn.setOnClickListener {
+            val text = binder.mainTv.text.toString()
             val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboardManager.setPrimaryClip(
                 ClipData.newPlainText(
                     "label",
-                    binder.mainTv.text.toString()
+                    text
                 )
             )
+            share(this, text)
         }
     }
 
@@ -194,5 +196,16 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
         }
     }
 
+    /**
+     * 调用系统分享
+     */
+    fun share(context: Context, adbCmdStr: String? = null) {
+        val intent = Intent(Intent.ACTION_SEND)
+        if (adbCmdStr != null) {
+            intent.putExtra(Intent.EXTRA_TEXT, adbCmdStr)
+            intent.type = "text/plain"
+        }
+        context.startActivity(Intent.createChooser(intent, "发送至..."))
+    }
 
 }
