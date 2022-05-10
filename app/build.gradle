@@ -58,6 +58,11 @@ android {
             versionName = "1.1.0"
             versionCode = 1100
         }
+        lib_1200 {
+            dimension "default"
+            versionName = "1.2.0"
+            versionCode = 1200
+        }
     }
 }
 
@@ -86,5 +91,8 @@ dependencies {
 
     lib_1100Implementation project(":library:lib_1100")
     lib_1100Implementation files("./libs/oaid_sdk_1.1.0.aar")
+
+    lib_1200Implementation project(":library:lib_1200")
+    lib_1200Implementation files("./libs/oaid_sdk_1.2.0.aar")
 
 }
