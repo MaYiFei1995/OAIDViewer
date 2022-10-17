@@ -43,6 +43,11 @@ android {
             versionName = "1.0.26"
             versionCode = 1026
         }
+        lib_1027 {
+            dimension "default"
+            versionName = "1.0.27"
+            versionCode = 1027
+        }
         lib_1029 {
             dimension "default"
             versionName = "1.0.29"
@@ -82,6 +87,9 @@ dependencies {
 
     lib_1026Implementation project(":library:lib_1026")
     lib_1026Implementation files("./libs/oaid_sdk_1.0.26.aar")
+
+    lib_1027Implementation project(":library:lib_1027")
+    lib_1027Implementation files("./libs/oaid_sdk_1.0.27.aar")
 
     lib_1029Implementation project(":library:lib_1029")
     lib_1029Implementation files("./libs/oaid_sdk_1.0.29.aar")
