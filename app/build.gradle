@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.example.oaidtest2"   //适配1.0.26版本demo签名，修改包名
         minSdk 21
-        targetSdk 31
+        targetSdk 32
     }
 
     buildTypes {
