@@ -88,6 +88,11 @@ android {
             versionName = "2.2.0"
             versionCode = 2200
         }
+        lib_2300 {
+            dimension "default"
+            versionName = "2.3.0"
+            versionCode = 2300
+        }
     }
 }
 
@@ -134,5 +139,8 @@ dependencies {
 
     lib_2200Implementation project(":library:lib_2200")
     lib_2200Implementation files("./libs/oaid_sdk_2.2.0.aar")
+
+    lib_2300Implementation project(":library:lib_2300")
+    lib_2300Implementation files("./libs/oaid_sdk_2.3.0.aar")
 
 }
