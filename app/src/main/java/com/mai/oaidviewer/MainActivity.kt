@@ -19,9 +19,10 @@ import com.mai.oaidviewer.databinding.ActivityMainBinding
 import com.mai.oaidviewer.library.OAIDCallback
 import com.mai.oaidviewer.library.OAIDHelper
 import com.mai.oaidviewer.library.OAIDSupplier
+import com.mai.oaidviewer.library.RequestPermissionCallback
+import java.lang.reflect.Method
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class MainActivity : AppCompatActivity(), OAIDCallback {
 
@@ -86,17 +87,30 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
     }
 
     private val sdf: SimpleDateFormat by lazy {
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
-            Locale.CHINA)
+        SimpleDateFormat(
+            "yyyy-MM-dd HH:mm:ss",
+            Locale.CHINA
+        )
     }
 
-    private fun initOaid() {
-        val oaidHelper = OAIDHelper(this, this)
-        oaidHelper.init()
+    private val oaidHelper: OAIDHelper
+        get() {
+            return OAIDHelper(this, this)
+        }
 
+    private fun initOaid() {
         // 设备系统与签名证书信息
+        var headerText = "Arch: "
+
+        if (isArchNotSupport()) {
+            headerText += "x86 \n"
+        } else {
+            headerText += "arm\n"
+            oaidHelper.init()
+        }
+
         val (versionName, versionCode) = oaidHelper.getSdkVersion()
-        val headerText = "Version: $versionName ($versionCode)\n" +
+        headerText += "Version: $versionName ($versionCode)\n" +
                 "Time: ${sdf.format(System.currentTimeMillis())}\n" +
                 "Brand: ${Build.BRAND}\n" +
                 "Manufacturer: ${Build.MANUFACTURER}\n" +
@@ -104,7 +118,20 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
                 "AndroidVersion: ${Build.VERSION.RELEASE}\n" +
                 "\n\n" +
                 oaidHelper.getCertInfo(sdf)
+
         binder.versionTv.text = headerText
+    }
+
+    private fun isArchNotSupport(): Boolean {
+        return try {
+            val clazz = Class.forName("android.os.SystemProperties")
+            val get: Method = clazz.getMethod("get", String::class.java, String::class.java)
+            val value = get.invoke(clazz, "ro.product.cpu.abi", "") as String
+            (value.contains("x86"))
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            true
+        }
     }
 
     /**
@@ -120,14 +147,9 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
      */
     override fun onSupport(_supplier: OAIDSupplier) {
         val sb = StringBuilder()
-        sb.append("Support: ${if (_supplier.isSupported()) "√" else "×"}<br>")
-        sb.append("IsLimited: ${
-            when {
-                _supplier.isLimited() == null -> "null"
-                _supplier.isLimited()!! -> "√"
-                else -> "×"
-            }
-        }<br>")
+        sb.append("IsSupport: ${if (_supplier.isSupported()) "√" else "×"}<br>")
+        sb.append("IsLimited: ${if (_supplier.isLimited()) "√" else "×"}<br>")
+        sb.append("IsSupportRequestOAIDPermission: ${if (_supplier.isSupportRequestOAIDPermission()) "√" else "×"}<br>")
         sb.append("Oaid: ${_supplier.getOAID()}<br>")
         sb.append("Vaid: ${_supplier.getVAID()}<br>")
         sb.append("Aaid: ${_supplier.getAAID()}<br>")
@@ -135,6 +157,57 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
             sb.append("<font color=\"#FF0000\"> 设置-> 隐私 -> 广告与隐私 -> \"限制广告追踪\" 开关需要关闭 </font>")
         }
         setText(sb.toString())
+
+        // 受限时请求权限
+        if (_supplier.isSupported() && _supplier.isLimited() && _supplier.isSupportRequestOAIDPermission()) {
+            oaidHelper.requestOAIDPermission(this, object : RequestPermissionCallback {
+
+                /**
+                 * 获取授权成功
+                 */
+                override fun onGranted(grPermission: Array<String>?) {
+                    val permissionStr = getPermissions(grPermission?.toList())
+                    Log.i("OAIDViewer", "RequestPermissionCallback#onGranted:$permissionStr")
+
+                    val text = "获取权限'${permissionStr}'成功"
+                    binder.permissionTV.text = text
+                }
+
+                /**
+                 * 获取授权失败
+                 */
+                override fun onDenied(dePermissions: List<String>?) {
+                    val permissionStr = getPermissions(dePermissions)
+                    Log.i("OAIDViewer", "RequestPermissionCallback#onDenied:$permissionStr")
+
+                    val text = "获取权限'${permissionStr}'失败"
+                    binder.permissionTV.text = text
+                }
+
+                /**
+                 * 禁止再次询问
+                 */
+                override fun onAskAgain(asPermissions: List<String>?) {
+                    val permissionStr = getPermissions(asPermissions)
+                    Log.i("OAIDViewer", "onAskAgain#onDenied:$permissionStr")
+
+                    val text = "禁止再次获取权限'${permissionStr}'"
+                    binder.permissionTV.text = text
+                }
+
+            })
+        }
+    }
+
+    private fun getPermissions(permissions: List<String>?): String {
+        if (permissions != null) {
+            val sb = StringBuilder()
+            for (permission in permissions) {
+                sb.append(permission).append(";")
+            }
+            return sb.toString()
+        }
+        return ""
     }
 
     private fun checkPermission() {
@@ -199,7 +272,7 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
     /**
      * 调用系统分享
      */
-    fun share(context: Context, adbCmdStr: String? = null) {
+    private fun share(context: Context, adbCmdStr: String? = null) {
         val intent = Intent(Intent.ACTION_SEND)
         if (adbCmdStr != null) {
             intent.putExtra(Intent.EXTRA_TEXT, adbCmdStr)

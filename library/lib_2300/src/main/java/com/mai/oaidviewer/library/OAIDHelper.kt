@@ -5,6 +5,7 @@ import android.util.Log
 import com.bun.miitmdid.core.InfoCode
 import com.bun.miitmdid.core.MdidSdkHelper
 import com.bun.miitmdid.interfaces.IIdentifierListener
+import com.bun.miitmdid.interfaces.IPermissionCallbackListener
 import com.bun.miitmdid.interfaces.IdSupplier
 
 class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, callback) {
@@ -33,8 +34,15 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
                             return _suppiler?.isSupported ?: false
                         }
 
-                        override fun isLimited(): Boolean? {
-                            return _suppiler?.isLimited
+                        override fun isLimited(): Boolean {
+                            return _suppiler?.isLimited ?: false
+                        }
+
+                        /**
+                         * 2.3.0新增，默认返回false
+                         */
+                        override fun isSupportRequestOAIDPermission(): Boolean {
+                            return _suppiler?.isSupportRequestOAIDPermission ?: false
                         }
 
                         override fun getOAID(): String {
@@ -103,6 +111,27 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
 
     override fun getSdkVersion(): Pair<String, String> {
         return Pair("2.3.0", MdidSdkHelper.SDK_VERSION_CODE.toString())
+    }
+
+    /**
+     * 2.3.0新增，在isSupportRequestOAIDPermission返回true时请求权限
+     */
+    override fun requestOAIDPermission(context: Context, callback: RequestPermissionCallback) {
+        MdidSdkHelper.requestOAIDPermission(context, object : IPermissionCallbackListener {
+
+            override fun onGranted(grPermission: Array<String>) {
+                callback.onGranted(grPermission)
+            }
+
+            override fun onDenied(dePermissions: MutableList<String>) {
+                callback.onDenied(dePermissions)
+            }
+
+            override fun onAskAgain(asPermissions: MutableList<String>) {
+                callback.onAskAgain(asPermissions)
+            }
+
+        })
     }
 
 }
