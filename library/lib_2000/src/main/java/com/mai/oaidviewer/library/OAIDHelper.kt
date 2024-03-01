@@ -33,8 +33,8 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
                             return _suppiler?.isSupported ?: false
                         }
 
-                        override fun isLimited(): Boolean? {
-                            return _suppiler?.isLimited
+                        override fun isLimited(): Boolean {
+                            return _suppiler?.isLimited ?: false
                         }
 
                         override fun getOAID(): String {

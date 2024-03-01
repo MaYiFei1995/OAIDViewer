@@ -12,12 +12,9 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
         val ret = MdidSdkHelper.InitSdk(context, true, object : IIdentifierListener {
             override fun OnSupport(isSupport: Boolean, _suppiler: IdSupplier?) {
                 callback.onSupport(object : OAIDSupplier {
+
                     override fun isSupported(): Boolean {
                         return isSupport
-                    }
-
-                    override fun isLimited(): Boolean? {
-                        return null
                     }
 
                     override fun getOAID(): String {

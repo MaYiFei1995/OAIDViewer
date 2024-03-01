@@ -28,13 +28,15 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
 
             val value = object : IIdentifierListener {
                 override fun onSupport(_suppiler: IdSupplier?) {
+
                     callback.onSupport(object : OAIDSupplier {
+
                         override fun isSupported(): Boolean {
                             return _suppiler?.isSupported ?: false
                         }
 
-                        override fun isLimited(): Boolean? {
-                            return _suppiler?.isLimited
+                        override fun isLimited(): Boolean {
+                            return _suppiler?.isLimited ?: false
                         }
 
                         override fun getOAID(): String {

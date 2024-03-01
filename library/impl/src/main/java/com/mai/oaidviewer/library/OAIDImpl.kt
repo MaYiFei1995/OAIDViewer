@@ -39,4 +39,12 @@ abstract class OAIDImpl(protected val context: Context, protected val callback: 
     open fun getCertInfo(sdf: SimpleDateFormat): String {
         return CertUtil.getCertInfo(sdf, loadPemFromAssetFile)
     }
+
+    /**
+     * 2.3.0新增，在isSupportRequestOAIDPermission返回true时请求权限
+     */
+    open fun requestOAIDPermission(context: Context, callback: RequestPermissionCallback) {
+        // ignore
+    }
+
 }
