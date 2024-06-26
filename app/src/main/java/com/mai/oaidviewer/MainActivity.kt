@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
         binder.versionTv.text = headerText
     }
 
+    @SuppressLint("PrivateApi")
     private fun isArchNotSupport(): Boolean {
         return try {
             val clazz = Class.forName("android.os.SystemProperties")
