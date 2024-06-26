@@ -1,17 +1,21 @@
-rootProject.name = "OAIDViewer"
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        //noinspection JcenterRepositoryObsolete
-        maven { url "https://jitpack.io" }
-        flatDir {
-            dirs 'app/libs'
-        }
     }
 }
+rootProject.name = "OAIDViewer"
+
 include ':app'
+include ':library:impl'
 include ':library:lib_1023'
 include ':library:lib_1025'
 include ':library:lib_1026'
@@ -26,4 +30,3 @@ include ':library:lib_2100'
 include ':library:lib_2200'
 include ':library:lib_2300'
 include ':library:lib_2400'
-include ':library:impl'
