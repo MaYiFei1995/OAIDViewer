@@ -20,7 +20,7 @@ class OAIDHelper(context: Context, callback: OAIDCallback) : OAIDImpl(context, c
             } catch (ignore: Exception) {
 
             }
-            if (MdidSdkHelper.SDK_VERSION_CODE != 20240110) {
+            if (MdidSdkHelper.SDK_VERSION_CODE != 20240510) {
                 Log.w(
                     "OAIDHelper",
                     "SDK version not match. Current version code is '${MdidSdkHelper.SDK_VERSION_CODE}'"
