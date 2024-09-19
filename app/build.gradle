@@ -104,6 +104,11 @@ android {
             versionName = "2.5.0"
             versionCode = 2500
         }
+        lib_2501 {
+            dimension "default"
+            versionName = "2.5.1"
+            versionCode = 2501
+        }
     }
 }
 
@@ -159,5 +164,8 @@ dependencies {
 
     lib_2500Implementation project(":library:lib_2500")
     lib_2500Implementation files("./libs/oaid_sdk_2.5.0.aar")
+
+    lib_2501Implementation project(":library:lib_2501")
+    lib_2501Implementation files("./libs/oaid_sdk_2.5.1.aar")
 
 }
