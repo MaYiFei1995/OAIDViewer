@@ -6,6 +6,6 @@ plugins {
     id("build-logic")
 }
 
-setupLibraryModule("2.5.1") {
+setupLibraryModule() {
     namespace = "com.mai.oaidviewer.library"
 }
