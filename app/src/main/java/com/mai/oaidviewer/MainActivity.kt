@@ -2,7 +2,10 @@ package com.mai.oaidviewer
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import android.os.Build
@@ -22,7 +25,9 @@ import com.mai.oaidviewer.library.OAIDSupplier
 import com.mai.oaidviewer.library.RequestPermissionCallback
 import java.lang.reflect.Method
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
+
+private const val TAG = "OAIDViewer"
 
 class MainActivity : AppCompatActivity(), OAIDCallback {
 
@@ -39,7 +44,7 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
         init()
 
         binder.copyBtn.setOnClickListener {
-            val text = binder.mainTv.text.toString()
+            val text = binder.main.text.toString()
             val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboardManager.setPrimaryClip(
                 ClipData.newPlainText(
@@ -66,9 +71,11 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
             in Build.VERSION_CODES.Q..Int.MAX_VALUE -> {
                 initOaid()
             }
+
             in Build.VERSION_CODES.M until Build.VERSION_CODES.Q -> {
                 checkPermission()
             }
+
             else -> {
                 initImei()
             }
@@ -76,9 +83,9 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
     }
 
     private fun setText(str: String) {
-        Log.e("OAIDViewer", str)
-        binder.mainTv.post {
-            binder.mainTv.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Log.e(TAG, str)
+        binder.main.post {
+            binder.main.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 Html.fromHtml(str, Html.FROM_HTML_MODE_COMPACT)
             } else {
                 Html.fromHtml(str)
@@ -119,7 +126,7 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
                 "\n\n" +
                 oaidHelper.getCertInfo(sdf)
 
-        binder.versionTv.text = headerText
+        binder.sdkVer.text = headerText
     }
 
     @SuppressLint("PrivateApi")
@@ -168,10 +175,10 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
                  */
                 override fun onGranted(grPermission: Array<String>?) {
                     val permissionStr = getPermissions(grPermission?.toList())
-                    Log.i("OAIDViewer", "RequestPermissionCallback#onGranted:$permissionStr")
+                    Log.i(TAG, "RequestPermissionCallback#onGranted:$permissionStr")
 
                     val text = "获取权限'${permissionStr}'成功"
-                    binder.permissionTV.text = text
+                    binder.permissionStatus.text = text
                 }
 
                 /**
@@ -179,10 +186,10 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
                  */
                 override fun onDenied(dePermissions: List<String>?) {
                     val permissionStr = getPermissions(dePermissions)
-                    Log.i("OAIDViewer", "RequestPermissionCallback#onDenied:$permissionStr")
+                    Log.i(TAG, "RequestPermissionCallback#onDenied:$permissionStr")
 
                     val text = "获取权限'${permissionStr}'失败"
-                    binder.permissionTV.text = text
+                    binder.permissionStatus.text = text
                 }
 
                 /**
@@ -190,10 +197,10 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
                  */
                 override fun onAskAgain(asPermissions: List<String>?) {
                     val permissionStr = getPermissions(asPermissions)
-                    Log.i("OAIDViewer", "onAskAgain#onDenied:$permissionStr")
+                    Log.i(TAG, "onAskAgain#onDenied:$permissionStr")
 
                     val text = "禁止再次获取权限'${permissionStr}'"
-                    binder.permissionTV.text = text
+                    binder.permissionStatus.text = text
                 }
 
             })
@@ -219,32 +226,33 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
         ) {
             initImei()
         } else {
-            alertDialog = AlertDialog.Builder(this).setMessage("应用需要电话权限！").setCancelable(false)
-                .setPositiveButton(
-                    android.R.string.ok
-                ) { _, _ ->
-                    if (++permissionErrCount > 3) {
-                        try {
-                            startActivity(
-                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).addFlags(
-                                    Intent.FLAG_ACTIVITY_NEW_TASK
-                                ).setData(Uri.fromParts("package", packageName, null))
-                            )
-                        } catch (e: Exception) {
-                            Toast.makeText(
+            alertDialog =
+                AlertDialog.Builder(this).setMessage("应用需要电话权限！").setCancelable(false)
+                    .setPositiveButton(
+                        android.R.string.ok
+                    ) { _, _ ->
+                        if (++permissionErrCount > 3) {
+                            try {
+                                startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).addFlags(
+                                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                    ).setData(Uri.fromParts("package", packageName, null))
+                                )
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "请手动到应用详情中允许应用电话权限",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } else {
+                            ActivityCompat.requestPermissions(
                                 this@MainActivity,
-                                "请手动到应用详情中允许应用电话权限",
-                                Toast.LENGTH_LONG
-                            ).show()
+                                arrayOf(Manifest.permission.READ_PHONE_STATE),
+                                9527
+                            )
                         }
-                    } else {
-                        ActivityCompat.requestPermissions(
-                            this@MainActivity,
-                            arrayOf(Manifest.permission.READ_PHONE_STATE),
-                            9527
-                        )
-                    }
-                }.create()
+                    }.create()
             alertDialog!!.show()
         }
     }
@@ -264,8 +272,8 @@ class MainActivity : AppCompatActivity(), OAIDCallback {
             val imei = (getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
             setText("imei:${imei}")
         } catch (e: Exception) {
-            binder.mainTv.post {
-                binder.mainTv.text = e.toString()
+            binder.main.post {
+                binder.main.text = e.toString()
             }
         }
     }

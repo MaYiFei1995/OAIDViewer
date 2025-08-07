@@ -7,31 +7,31 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/version_tv"
+        android:id="@+id/sdkVer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="50dp"
         android:gravity="center_vertical"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/main_tv"
+        app:layout_constraintBottom_toTopOf="@+id/main"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Version: 1.0.30 (20211018)" />
 
     <TextView
-        android:id="@+id/main_tv"
+        android:id="@+id/main"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        app:layout_constraintBottom_toTopOf="@+id/copy_btn"
-        app:layout_constraintEnd_toEndOf="@id/version_tv"
-        app:layout_constraintStart_toStartOf="@id/version_tv"
-        app:layout_constraintTop_toBottomOf="@+id/version_tv"
-        tools:text="isSupport:true\nisLimited:false\boaid:123\naaid:null\nvaid:null\n" />
+        app:layout_constraintBottom_toTopOf="@+id/copyBtn"
+        app:layout_constraintEnd_toEndOf="@id/sdkVer"
+        app:layout_constraintStart_toStartOf="@id/sdkVer"
+        app:layout_constraintTop_toBottomOf="@+id/sdkVer"
+        tools:text="isSupport:true\nisLimited:false\noaid:123\naaid:null\nvaid:null\n" />
 
     <Button
-        android:id="@+id/copy_btn"
+        android:id="@+id/copyBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -39,10 +39,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/main_tv" />
+        app:layout_constraintTop_toBottomOf="@+id/main" />
 
     <TextView
-        android:id="@+id/permissionTV"
+        android:id="@+id/permissionStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -51,7 +51,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/copy_btn"
-        tools:text="系统拒接请求获取权限:" />
+        app:layout_constraintTop_toBottomOf="@id/copyBtn"
+        tools:text="禁止再次获取权限" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
