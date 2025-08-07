@@ -24,7 +24,23 @@ fun Project.setupLibraryModule(version: String = "", block: LibraryExtension.() 
 }
 
 val versionCodes = listOf(
-    1023, 1025, 1026, 1027, 1029, 1030, 1100, 1200, 1201, 2000, 2100, 2200, 2300, 2400, 2500, 2501
+    1023,
+    1025,
+    1026,
+    1027,
+    1029,
+    1030,
+    1100,
+    1200,
+    1201,
+    2000,
+    2100,
+    2200,
+    2300,
+    2400,
+    2500,
+    2501,
+    2700
 )
 
 fun Project.setupAppModule(block: BaseAppModuleExtension.() -> Unit = {}) {
