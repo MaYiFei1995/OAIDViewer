@@ -1,49 +1,34 @@
 package com.mai.oaidviewer.library
 
 import android.content.Context
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.text.SimpleDateFormat
+import kotlin.reflect.full.primaryConstructor
 
-abstract class OAIDImpl(protected val context: Context, protected val callback: OAIDCallback) {
+interface OAIDImpl {
 
-    abstract fun init()
+    companion object {
 
-    val loadPemFromAssetFile: String by lazy {
-        try {
-            val `is`: InputStream = context.assets.open("com.example.oaidtest2.cert.pem")
-            val `in` = BufferedReader(InputStreamReader(`is`))
-            val builder = java.lang.StringBuilder()
-            var line: String?
-            while (`in`.readLine().also { line = it } != null) {
-                builder.append(line)
-                builder.append('\n')
-            }
-            builder.toString()
-        } catch (e: IOException) {
-            callback.onText("loadPemFromAssetFile failed")
-            ""
+        val instance: OAIDImpl by lazy {
+            Class.forName("com.mai.oaidviewer.library.OAIDHelper").kotlin
+                .primaryConstructor!!
+                .call() as OAIDImpl
         }
+
     }
 
-    /**
+    suspend fun init(context: Context, callback: (result: InitCallback) -> Unit)
+
+    /**Uni
      * 获取SDK版本号
      *
      * @return first versionName
      *         second versionCode
      */
-    abstract fun getSdkVersion(): Pair<String, String>
-
-    open fun getCertInfo(sdf: SimpleDateFormat): String {
-        return CertUtil.getCertInfo(sdf, loadPemFromAssetFile)
-    }
+    fun getSdkVersion(): Pair<String, String>
 
     /**
      * 2.3.0新增，在isSupportRequestOAIDPermission返回true时请求权限
      */
-    open fun requestOAIDPermission(context: Context, callback: RequestPermissionCallback) {
+    fun requestOAIDPermission(context: Context, callback: RequestPermissionCallback) {
         // ignore
     }
 

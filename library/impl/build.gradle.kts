@@ -6,6 +6,10 @@ plugins {
     id("build-logic")
 }
 
-setupLibraryModule() {
+setupLibraryModule {
     namespace = "com.mai.oaidviewer.library"
+}
+
+dependencies {
+    implementation(kotlin("reflect"))
 }

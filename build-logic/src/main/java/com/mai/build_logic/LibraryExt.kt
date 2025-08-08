@@ -5,10 +5,13 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
 fun Project.setupLibraryModule(version: String = "", block: LibraryExtension.() -> Unit = {}) {
     setupBaseModule<LibraryExtension> {
+        namespace = "com.mai.oaidviewer.library"
         buildTypes {
             release {
                 isMinifyEnabled = false
@@ -17,6 +20,7 @@ fun Project.setupLibraryModule(version: String = "", block: LibraryExtension.() 
 
         block()
     }
+    dependencies.add("compileOnly", project.the<VersionCatalogsExtension>().named("libs").findLibrary("androidx-core-ktx").get())
     if (version.isNotEmpty()) {
         dependencies.add("compileOnly", project(":library:impl"))
         dependencies.add("compileOnly", files("$rootDir/Doc/$version/oaid_sdk_$version.aar"))
@@ -45,12 +49,13 @@ val versionCodes = listOf(
 
 fun Project.setupAppModule(block: BaseAppModuleExtension.() -> Unit = {}) {
     setupBaseModule<BaseAppModuleExtension> {
+        namespace = "com.mai.oaidviewer"
         defaultConfig {
             applicationId = "com.example.oaidtest2"
             flavorDimensions += "demo"
         }
         buildFeatures {
-            viewBinding = true
+            compose = true
         }
         buildTypes {
             debug { disableMinify() }
@@ -91,10 +96,10 @@ private fun ApplicationBuildType.disableMinify() {
 
 private inline fun <reified T : BaseExtension> Project.setupBaseModule(crossinline block: T.() -> Unit = {}) {
     extensions.configure<BaseExtension>("android") {
-        compileSdkVersion(34)
+        compileSdkVersion(35)
         defaultConfig {
             minSdk = 21
-            targetSdk = 34
+            targetSdk = 35
         }
         (this as T).block()
     }
