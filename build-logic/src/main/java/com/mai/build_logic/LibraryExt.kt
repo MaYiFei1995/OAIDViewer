@@ -44,6 +44,7 @@ val versionCodes = listOf(
     2400,
     2500,
     2501,
+    2600,
     2700
 )
 

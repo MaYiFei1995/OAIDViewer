@@ -32,6 +32,7 @@ include(
     ":library:lib_2400",
     ":library:lib_2500",
     ":library:lib_2501",
+    ":library:lib_2600",
     ":library:lib_2700"
 )
 
