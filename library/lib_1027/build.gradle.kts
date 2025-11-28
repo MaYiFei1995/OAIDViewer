@@ -6,4 +6,4 @@ plugins {
     id("build-logic")
 }
 
-setupLibraryModule("1.0.27") {}
+setupLibraryModule {}

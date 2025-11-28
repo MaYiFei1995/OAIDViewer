@@ -81,8 +81,8 @@ class OAIDHelper : OAIDImpl {
         }
     }
 
-    override fun getSdkVersion(): Pair<String, String> {
-        return Pair("2.0.0", MdidSdkHelper.SDK_VERSION_CODE.toString())
+    override fun getSdkVersionCode(): Int {
+        return MdidSdkHelper.SDK_VERSION_CODE
     }
 
 }

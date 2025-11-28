@@ -17,13 +17,10 @@ interface OAIDImpl {
 
     suspend fun init(context: Context, callback: (result: InitCallback) -> Unit)
 
-    /**Uni
+    /**
      * 获取SDK版本号
-     *
-     * @return first versionName
-     *         second versionCode
      */
-    fun getSdkVersion(): Pair<String, String>
+    fun getSdkVersionCode(): Int
 
     /**
      * 2.3.0新增，在isSupportRequestOAIDPermission返回true时请求权限

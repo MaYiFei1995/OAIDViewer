@@ -218,8 +218,8 @@ class MainActivity : ComponentActivity() {
             })
 
             // getSdkVersion 需要在 loadLibrary 后
-            val (versionName, versionCode) = OAIDImpl.instance.getSdkVersion()
-            headerText += "Version: $versionName ($versionCode)\n" +
+            headerText += "Version: ${resources.getString(R.string.sdk_ver_name)} " +
+                    "(${OAIDImpl.instance.getSdkVersionCode()})\n" +
                     "Time: ${sdf.format(System.currentTimeMillis())}\n" +
                     "Brand: ${Build.BRAND}\n" +
                     "Manufacturer: ${Build.MANUFACTURER}\n" +

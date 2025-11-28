@@ -52,8 +52,8 @@ class OAIDHelper : OAIDImpl {
         }
     }
 
-    override fun getSdkVersion(): Pair<String, String> {
-        return Pair("1.0.25", "20200702")
+    override fun getSdkVersionCode(): Int {
+        return 20200702
     }
 
 }

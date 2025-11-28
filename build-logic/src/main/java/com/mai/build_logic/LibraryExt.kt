@@ -9,7 +9,7 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
-fun Project.setupLibraryModule(version: String = "", block: LibraryExtension.() -> Unit = {}) {
+fun Project.setupLibraryModule(block: LibraryExtension.() -> Unit = {}) {
     setupBaseModule<LibraryExtension> {
         namespace = "com.mai.oaidviewer.library"
         buildTypes {
@@ -20,36 +20,24 @@ fun Project.setupLibraryModule(version: String = "", block: LibraryExtension.() 
 
         block()
     }
-    dependencies.add("compileOnly", project.the<VersionCatalogsExtension>().named("libs").findLibrary("androidx-core-ktx").get())
-    if (version.isNotEmpty()) {
+    dependencies.add(
+        "compileOnly",
+        project.the<VersionCatalogsExtension>().named("libs").findLibrary("androidx-core-ktx").get()
+    )
+    if (project.name.startsWith("lib_")) {
+        val version = parseVersionName(project.name.substring(4).toInt())
         dependencies.add("compileOnly", project(":library:impl"))
         dependencies.add("compileOnly", files("$rootDir/Doc/$version/oaid_sdk_$version.aar"))
     }
 }
 
-val versionCodes = listOf(
-    1023,
-    1025,
-    1026,
-    1027,
-    1029,
-    1030,
-    1100,
-    1200,
-    1201,
-    2000,
-    2100,
-    2200,
-    2300,
-    2400,
-    2500,
-    2501,
-    2600,
-    2700,
-    2800
-)
-
 fun Project.setupAppModule(block: BaseAppModuleExtension.() -> Unit = {}) {
+    val versionCodes = project.rootDir.resolve("library").listFiles()
+        .filter { it.isDirectory && it.name.startsWith("lib_") }.map {
+            it.name.substring(
+                4
+            ).toInt()
+        }
     setupBaseModule<BaseAppModuleExtension> {
         namespace = "com.mai.oaidviewer"
         defaultConfig {
@@ -68,6 +56,7 @@ fun Project.setupAppModule(block: BaseAppModuleExtension.() -> Unit = {}) {
                 dimension = "demo"
                 versionCode = version
                 versionName = parseVersionName(version)
+                resValue("string", "sdk_ver_name", "\"$versionName\"")
             }
         }
         block()
