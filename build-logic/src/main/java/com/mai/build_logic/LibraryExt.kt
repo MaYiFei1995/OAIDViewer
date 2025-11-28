@@ -45,7 +45,8 @@ val versionCodes = listOf(
     2500,
     2501,
     2600,
-    2700
+    2700,
+    2800
 )
 
 fun Project.setupAppModule(block: BaseAppModuleExtension.() -> Unit = {}) {

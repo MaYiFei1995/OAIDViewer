@@ -33,7 +33,8 @@ include(
     ":library:lib_2500",
     ":library:lib_2501",
     ":library:lib_2600",
-    ":library:lib_2700"
+    ":library:lib_2700",
+    ":library:lib_2800"
 )
 
 rootProject.name = "OAIDViewer"
