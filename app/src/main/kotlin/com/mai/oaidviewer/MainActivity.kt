@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
                             onCopyClicked = {
                                 val textToCopy = "$headerText\n$contentText"
                                 val clipboardManager =
-                                    getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboardManager.setPrimaryClip(
                                     ClipData.newPlainText(
                                         "oaid",
@@ -281,7 +281,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("MissingPermission", "HardwareIds")
     private fun initImei() {
         try {
-            val imei = (getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
+            val imei = (getSystemService(TELEPHONY_SERVICE) as TelephonyManager).deviceId
             onText("imei:$imei")
         } catch (e: Exception) {
             onText(e.toString())
@@ -334,11 +334,8 @@ fun MainScreen(
                 }
             },
             update = { textView ->
-                textView.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                textView.text =
                     Html.fromHtml(content, Html.FROM_HTML_MODE_COMPACT)
-                } else {
-                    Html.fromHtml(content)
-                }
             },
         )
 

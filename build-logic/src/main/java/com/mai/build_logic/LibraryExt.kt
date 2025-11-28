@@ -100,7 +100,7 @@ private inline fun <reified T : BaseExtension> Project.setupBaseModule(crossinli
     extensions.configure<BaseExtension>("android") {
         compileSdkVersion(35)
         defaultConfig {
-            minSdk = 21
+            minSdk = 24
             targetSdk = 35
         }
         (this as T).block()
