@@ -43,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -331,20 +332,22 @@ fun MainScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AndroidView(
-            factory = { context ->
-                TextView(context).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                }
-            },
-            update = { textView ->
-                textView.text =
-                    Html.fromHtml(content, Html.FROM_HTML_MODE_COMPACT)
-            },
-        )
+        key(content) {
+            AndroidView(
+                factory = { context ->
+                    TextView(context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                    }
+                },
+                update = { textView ->
+                    textView.text =
+                        Html.fromHtml(content, Html.FROM_HTML_MODE_COMPACT)
+                },
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
