@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -163,59 +165,62 @@ class MainActivity : ComponentActivity() {
             } else {
                 "arm\n"
             }
+            try {
+                OAIDImpl.instance.init(this@MainActivity, { result: InitCallback ->
+                    if (result is InitCallback.Failure) {
+                        if (result.msg.isNotEmpty()) {
+                            onText("<font color=\"#FF0000\">初始化失败 - ${result.msg} </font>")
+                        }
+                    } else {
+                        (result as InitCallback.Success).data.let { data ->
+                            onText(data.toString())
+                            if (data.isSupported && data.isLimited && data.isSupportRequestOAIDPermission) {
+                                OAIDImpl.instance.requestOAIDPermission(
+                                    this@MainActivity,
+                                    object : RequestPermissionCallback {
 
-            OAIDImpl.instance.init(this@MainActivity, { result: InitCallback ->
-                if (result is InitCallback.Failure) {
-                    if (result.msg.isNotEmpty()) {
-                        onText("<font color=\"#FF0000\">初始化失败 - ${result.msg} </font>")
-                    }
-                } else {
-                    (result as InitCallback.Success).data.let { data ->
-                        onText(data.toString())
-                        if (data.isSupported && data.isLimited && data.isSupportRequestOAIDPermission) {
-                            OAIDImpl.instance.requestOAIDPermission(
-                                this@MainActivity,
-                                object : RequestPermissionCallback {
+                                        /**
+                                         * 获取授权成功
+                                         */
+                                        override fun onGranted(grPermission: Array<String>?) {
+                                            val permissionStr =
+                                                getPermissions(grPermission?.toList())
+                                            Log.i(
+                                                TAG,
+                                                "RequestPermissionCallback#onGranted:$permissionStr"
+                                            )
+                                            permissionStatusText = "获取权限'${permissionStr}'成功"
+                                        }
 
-                                    /**
-                                     * 获取授权成功
-                                     */
-                                    override fun onGranted(grPermission: Array<String>?) {
-                                        val permissionStr =
-                                            getPermissions(grPermission?.toList())
-                                        Log.i(
-                                            TAG,
-                                            "RequestPermissionCallback#onGranted:$permissionStr"
-                                        )
-                                        permissionStatusText = "获取权限'${permissionStr}'成功"
-                                    }
+                                        /**
+                                         * 获取授权失败
+                                         */
+                                        override fun onDenied(dePermissions: List<String>?) {
+                                            val permissionStr = getPermissions(dePermissions)
+                                            Log.i(
+                                                TAG,
+                                                "RequestPermissionCallback#onDenied:$permissionStr"
+                                            )
+                                            permissionStatusText = "获取权限'${permissionStr}'失败"
+                                        }
 
-                                    /**
-                                     * 获取授权失败
-                                     */
-                                    override fun onDenied(dePermissions: List<String>?) {
-                                        val permissionStr = getPermissions(dePermissions)
-                                        Log.i(
-                                            TAG,
-                                            "RequestPermissionCallback#onDenied:$permissionStr"
-                                        )
-                                        permissionStatusText = "获取权限'${permissionStr}'失败"
-                                    }
-
-                                    /**
-                                     * 禁止再次询问
-                                     */
-                                    override fun onAskAgain(asPermissions: List<String>?) {
-                                        val permissionStr = getPermissions(asPermissions)
-                                        Log.i(TAG, "onAskAgain#onDenied:$permissionStr")
-                                        permissionStatusText =
-                                            "禁止再次获取权限'${permissionStr}'"
-                                    }
-                                })
+                                        /**
+                                         * 禁止再次询问
+                                         */
+                                        override fun onAskAgain(asPermissions: List<String>?) {
+                                            val permissionStr = getPermissions(asPermissions)
+                                            Log.i(TAG, "onAskAgain#onDenied:$permissionStr")
+                                            permissionStatusText =
+                                                "禁止再次获取权限'${permissionStr}'"
+                                        }
+                                    })
+                            }
                         }
                     }
-                }
-            })
+                })
+            } catch (tr: Throwable) {
+                onText("<font color=\"#FF0000\">初始化异常 - ${tr}</font>")
+            }
 
             // getSdkVersion 需要在 loadLibrary 后
             headerText += "Version: ${resources.getString(R.string.sdk_ver_name)} " +
@@ -308,10 +313,12 @@ fun MainScreen(
     onDialogDismiss: () -> Unit,
     onDialogConfirm: () -> Unit,
 ) {
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(50.dp),
+            .padding(24.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
